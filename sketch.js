@@ -6,6 +6,7 @@ var img;
 
 var sw;
 var switches = [];
+var boxes = [];
 
 function preload() {
   img = loadImage('./front.png');
@@ -18,6 +19,7 @@ function setup() {
   var canvas = createCanvas(1000, 800, WEBGL);
   canvas.parent('sketch-holder');
 
+  // Create Switches
   for (var i=0; i<=3; i++){
 
     switches.push(
@@ -30,10 +32,20 @@ function setup() {
     );
   }
 
+  // Create Box
+  Array.prototype.push.apply(boxes,[
+    //sides
+    new MyBox(-430, 0, 0, 5, 400, 400, 30),
+    new MyBox(430, 0, 0, 5, 400, 400, 30),
 
-  // create default texture
-  def_texture = createGraphics(300, 300);
-  def_texture.background(0);
+    //bottom and top
+    new MyBox(0, -200, 0, 860, 5, 400, 0),
+    new MyBox(0, 200, 0, 860, 5, 400, 0),
+
+    //back
+    new MyBox(0, 0, -400, 860, 400, 5, 15)
+
+  ]);
 
 }
 
@@ -43,7 +55,7 @@ function draw() {
   // pointLight(255, 255, 255, 0, 0, 100)
   ambientLight(255);
 
-  background(120);
+  background(255);
 
   //draw bounding box
   drawBox();
@@ -70,17 +82,16 @@ function mouseClicked() {
   //   sw.moveInside();
   // });
   let sw = getSwitch(mouseX-width/2, mouseY-height/2)
-  sw.toggleZ();
+  if(sw)
+    sw.toggleZ();
 }
 
 
 function drawBox() {
-  push();
-  texture(def_texture);
-  rotateX(PI/2);
-  translate(0,0, 230);
-  plane(700,300);
-  pop();
+  // console.log(boxes.length)
+  boxes.forEach(box => {
+    box.draw();
+  });
 }
 
 
@@ -190,12 +201,23 @@ function Switch(x, y, z, width, height, depth, txtr) {
 /**
  * Box class
  */
-
- function Box(x, y, z, width, height, depth) {
+ function MyBox(x, y, z, width, height, depth, clr) {
   this.x = x;
   this.y = y;
   this.z = z;
   this.width = width;
   this.height = height;
   this.depth = depth;
+
+  this.txtr = createGraphics(300, 300);
+  this.txtr.background(clr);
+
+  this.draw = function() {
+    // console.log('inside box draw')
+    push();
+    texture(this.txtr);
+    translate(x, y, z-(this.depth/2));
+    box(width, height, depth);
+    pop();
+  }
  }

@@ -18,13 +18,23 @@ function setup() {
   var canvas = createCanvas(1000, 800, WEBGL);
   canvas.parent('sketch-holder');
 
-  // sw = new
+  for (var i=0; i<=3; i++){
 
-  for (var i=0; i<=7; i++){
     switches.push(
-      new Switch(i*100 - 400, 0, 0, 60, 300, 150, typeB)
+      new Switch(i*100, 0, 0, 60, 300, 150, typeB)
     );
   }
+  for (var i=-1; i>= -3; i--){
+    switches.push(
+      new Switch(i*100, 0, 0, 60, 300, 150, typeA)
+    );
+  }
+
+
+  // create default texture
+  def_texture = createGraphics(300, 300);
+  def_texture.background(0);
+
 }
 
 function draw() {
@@ -35,44 +45,45 @@ function draw() {
 
   background(120);
 
+  //draw bounding box
+  drawBox();
+
+  // draw switches
   switches.forEach(sw => {
     sw.draw();
   });
 
-  // sw.draw()
 
-  // pointLight(255, 255, 255, 0, 0, 100)
+  pointLight(255, 255, 255, 0, 0, 100)
 }
 
 function getSwitch(x, y){
-  console.log('inside get switch')
-  switches.forEach(sw => {
-    if(sw.pointInsideFace(x, y)) {
-
-      console.log('found switch')
-      console.log(sw)
-      return sw.x;
-    }
-
+  return switches.find(function(sw){
+    return sw.pointInsideFace(x,y);
   });
 }
 
-function mouseDragged(event) {
-  // xPos = map(event.clientX, 0, width, -300, 300);
-  // yPos = map(event.clientY, 0, height, -300, 300);
-  // sw.move(mouseX - (width/2), mouseY - (height/2));
+
+function mouseClicked() {
+
+  // switches.forEach(sw => {
+  //   sw.moveInside();
+  // });
+  let sw = getSwitch(mouseX-width/2, mouseY-height/2)
+  sw.toggleZ();
 }
 
 
-function keyPressed(event) {
-  sw.moveZ(-100)
+function drawBox() {
+  push();
+  texture(def_texture);
+  rotateX(PI/2);
+  translate(0,0, 230);
+  plane(700,300);
+  pop();
 }
 
-function mousePressed() {
-  // sw.moveZ(0)
-  // console.log(sw.pointInsideFace(mouseX-(width/2), mouseY-(height/2)))
-  console.log(getSwitch(mouseX, mouseY))
-}
+
 
 
 /**
@@ -86,6 +97,11 @@ function mousePressed() {
  * @param {image} txtr
  */
 function Switch(x, y, z, width, height, depth, txtr) {
+
+  // state
+  this.outside = false;
+  outsideZ = z+70;
+  insideZ = z;
 
   // Position
   this.xPos = x;
@@ -101,6 +117,7 @@ function Switch(x, y, z, width, height, depth, txtr) {
   this.depth = depth;
 
   this.txtr = txtr;
+
 
 
   // Draw method
@@ -129,6 +146,22 @@ function Switch(x, y, z, width, height, depth, txtr) {
   this.moveZ = function(zPos) {
     this.intendedZ = zPos;
   }
+  this.toggleZ = function() {
+    if(this.outside) {
+      this.moveZ(insideZ);
+      this.outside = false;
+    }
+    else {
+      this.moveZ(outsideZ);
+      this.outside = true;
+    }
+  }
+  this.moveInside = function() {
+    this.moveZ(insideZ);
+  }
+  this.moveOutside = function() {
+    this.moveZ(outsideZ);
+  }
   this.move = function(xPos, yPos) {
     this.xPos = xPos;
     this.yPos = yPos;
@@ -137,7 +170,7 @@ function Switch(x, y, z, width, height, depth, txtr) {
   // Update position function
   this.updatePosition = function() {
     // TODO: Add an anchor condition
-    this.zPos = lerp(this.zPos, this.intendedZ, 0.08);
+    this.zPos = lerp(this.zPos, this.intendedZ, 0.095);
   }
 
   // log position
@@ -152,3 +185,17 @@ function Switch(x, y, z, width, height, depth, txtr) {
 }
 
 
+
+
+/**
+ * Box class
+ */
+
+ function Box(x, y, z, width, height, depth) {
+  this.x = x;
+  this.y = y;
+  this.z = z;
+  this.width = width;
+  this.height = height;
+  this.depth = depth;
+ }
